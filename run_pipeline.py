@@ -1,17 +1,21 @@
 """run_pipeline.py — runs bronze → silver → gold once."""
-import logging, os
+import logging
+import sys
 from dotenv import load_dotenv
 
 load_dotenv()
 
 logging.basicConfig(
-    filename="pipeline.log",
     level=logging.INFO,
     format="%(asctime)s %(levelname)s %(message)s",
+    handlers=[
+        logging.FileHandler("pipeline.log"),
+        logging.StreamHandler(sys.stdout),
+    ],
 )
 log = logging.getLogger("pipeline")
 
-from notebook_funcs import extract, transform, aggregate  # extract these from week7.ipynb
+from notebook_funcs import extract, transform, aggregate
 
 if __name__ == "__main__":
     try:
@@ -22,4 +26,4 @@ if __name__ == "__main__":
         log.info("=== pipeline OK: gold=%s ===", gold_key)
     except Exception as e:
         log.exception("pipeline FAILED: %s", e)
-        raise
+        sys.exit(1)
