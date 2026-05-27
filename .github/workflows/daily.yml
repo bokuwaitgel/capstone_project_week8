@@ -1,0 +1,24 @@
+name: daily-pipeline
+
+on:
+  schedule:
+    - cron: "*/2 * * * *"        # every 2 minutes
+  workflow_dispatch:           # manual run button
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - run: pip install -r requirements.txt
+      - run: python run_pipeline.py
+        env:
+          AWS_ACCESS_KEY_ID:     ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_REGION:            ${{ secrets.AWS_REGION }}
+          BUCKET:                ${{ secrets.BUCKET }}
+      - if: failure()
+        run: echo "::error::pipeline failed — check logs"
